@@ -1,26 +1,43 @@
 module Main where
+
+
 import           Control.Monad.Trans
-import qualified Data.Map                         as Map
-import           Data.Typeable                    (Typeable)
-import           GHC.Generics
-import           System.Console.Haskeline
-import           Term
-import           Unbound.Generics.LocallyNameless
+import           System.Console.Repline
 
-type Repl a = InputT IO a
+import           Data.List              (isPrefixOf)
 
-settings :: Settings IO
-settings = defaultSettings { historyFile  = Just "totes" }
+type Repl a = HaskelineT IO a
 
-process :: String -> IO ()
-process = putStrLn
+-- Evaluation : handle each line user inputs
+cmd :: String -> Repl ()
+cmd input = liftIO $ print input
 
-repl :: Repl ()
-repl = do
-    minput <- getInputLine "> "
-    case minput of
-        Nothing    -> outputStrLn "Exiting"
-        Just input -> liftIO (process input) >> repl
+-- Tab Completion: return a completion for partial words entered
+completer :: Monad m => WordCompleter m
+completer n = do
+  let names = ["kirk", "spock", "mccoy"]
+  return $ filter (isPrefixOf n) names
+
+-- Commands
+help :: [String] -> Repl ()
+help args = liftIO $ print $ "Help: " ++ show args
+
+say :: [String] -> Repl ()
+say args = do
+    _ <- liftIO $ print (unwords args)
+    return ()
+
+options :: [(String, [String] -> Repl ())]
+options = [
+    ("help", help)  -- :help
+  , ("say", say)    -- :say
+  ]
+
+ini :: Repl ()
+ini = liftIO $ putStrLn ""
+
+repl :: IO ()
+repl = evalRepl "> " cmd options (Word0 completer) ini
 
 main :: IO ()
-main = runInputT settings repl
+main = repl

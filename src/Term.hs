@@ -10,8 +10,8 @@ import           GHC.Generics
 import           System.Console.Haskeline
 import           Unbound.Generics.LocallyNameless
 
-data Term = Data -- the type of types ( finite )
-          | Codata -- the type of types ( infinite (corecursive) )
+data Term = Data -- type of types ( finite )
+          | Codata -- type of types ( infinite (corecursive) )
           | Var (Name Term)
           | Lambda (Bind (Name Term) Term)
           | Pi (Bind (Name Term) Term) -- "forall"
