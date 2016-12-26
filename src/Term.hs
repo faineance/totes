@@ -7,7 +7,7 @@ import           Control.Monad.Trans
 import qualified Data.Map                         as Map
 import           Data.Typeable                    (Typeable)
 import           GHC.Generics
-import           System.Console.Haskeline
+
 import           Unbound.Generics.LocallyNameless
 
 data Term = Data -- type of types ( finite )
@@ -18,8 +18,15 @@ data Term = Data -- type of types ( finite )
           | App Term Term
         deriving (Show, Generic, Typeable)
 
+
 instance Alpha Term
 
 instance Subst Term Term where
     isvar (Var x) = Just ( SubstName x)
     isvar _       = Nothing
+
+data Declaration = Type (Name Term)
+                 | Def (Name Term)
+        deriving (Show, Generic, Typeable)
+
+type Module = [Declaration]
