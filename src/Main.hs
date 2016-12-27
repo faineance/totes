@@ -5,6 +5,7 @@ import           System.Console.Repline
 import           Data.List              (isPrefixOf)
 import           System.Exit
 import           Term
+import Parser
 type Repl a = HaskelineT IO a
 
 -- Evaluation : handle each line user inputs
