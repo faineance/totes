@@ -25,30 +25,19 @@ reserved   = Token.reserved tokenizer
 reservedOp = Token.reservedOp tokenizer
 parens     = Token.parens tokenizer
 
-
+definition :: Parser Definition
 definition = do
   name <- ident
   reservedOp "="
-  val <- term
-  return (Def (string2Name name) val)
-
-signature = do
-  name <- ident
-  reservedOp ":"
-  val <- term
-  return (Sig (string2Name name) val)
-
-declaration :: Parser Declaration
-declaration = definition <|> signature
-
-
-
+  body <- term
+  return . Definition . bind (string2Name name) $ body
 
 var :: Parser Term
 var = do
   name <- ident
   return $ var' name
 
+term :: Parser Term
 term = lambda <|> var <|> app
 
 lambda :: Parser Term
@@ -67,6 +56,6 @@ app = do
 
 parseModule :: String -> Module
 parseModule input =
-    case parse (many1 declaration) "<stdin>" input of
+    case parse (many1 definition) "<stdin>" input of
       Left err  -> error (show err)
       Right ast -> ast
