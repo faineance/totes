@@ -1,9 +1,10 @@
+
 module Parser where
 import           Control.Applicative              hiding (many)
 
 import           Term
 import           Text.Parsec                      hiding ((<|>))
-import           Text.Parsec.Expr
+
 import           Text.Parsec.Language
 import           Text.Parsec.String
 import qualified Text.Parsec.Token                as Token
@@ -37,8 +38,13 @@ var = do
   name <- ident
   return $ var' name
 
+data' :: Parser Term
+data' = do
+    reserved "Data"
+    return Data
+
 term :: Parser Term
-term = lambda <|> var <|> app
+term = lambda <|> data' <|> var <|> app
 
 lambda :: Parser Term
 lambda = do
@@ -63,4 +69,4 @@ parseModule :: String -> Module
 parseModule input =
     case parse (many1 definition) "<stdin>" input of
       Left err  -> error (show err)
-      Right ast -> ast
+      Right ast -> Module ast

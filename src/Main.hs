@@ -1,11 +1,11 @@
 {-# OPTIONS_GHC -Wall #-}
 module Main where
-
 import           Control.Monad.Trans
-import           Data.List              (isPrefixOf)
 
+import           Data.List              (isPrefixOf)
 import           Debug.Trace
 import           Parser
+import           PrettyPrint
 import           System.Console.Repline
 import           System.Environment
 import           System.Exit
@@ -43,10 +43,14 @@ say args = do
     _ <- liftIO $ print (unwords args)
     return ()
 
+
 type' :: [String] -> Repl ()
 type' args = do
-    _ <- liftIO $ print (infer empty (parseTerm (unwords args)))
+    _ <- liftIO $ putStrLn (either show (pp . fst) ty)
     return ()
+    where
+        ty = infer empty (parseTerm (unwords args))
+
 
 quit :: a -> Repl ()
 quit _ = liftIO exitSuccess
@@ -75,4 +79,4 @@ main = do
     case args of
         []         -> repl (return ())
         [fileName] -> repl (load [fileName])
-        _          -> return ()
+        _          -> putStrLn "invalid arguments"
