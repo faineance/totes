@@ -53,6 +53,11 @@ app = do
   ts <- many term
   return . foldl1 App $ ts
 
+parseTerm :: String -> Term
+parseTerm input =
+  case parse term "<stdin>" input of
+    Left err  -> error (show err)
+    Right ast -> ast
 
 parseModule :: String -> Module
 parseModule input =

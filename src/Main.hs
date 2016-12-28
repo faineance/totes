@@ -1,32 +1,37 @@
+{-# OPTIONS_GHC -Wall #-}
 module Main where
 
 import           Control.Monad.Trans
 import           Data.List              (isPrefixOf)
-import           Data.Version
+
 import           Debug.Trace
 import           Parser
-import           Paths_totes            (version)
 import           System.Console.Repline
 import           System.Environment
 import           System.Exit
 import           Term
+
 type Repl a = HaskelineT IO a
 
 -- Evaluation : handle each line user inputs
 cmd :: String -> Repl ()
 cmd input = liftIO $ print input
 
+defaultMatcher :: MonadIO m => [(String, CompletionFunc m)]
+defaultMatcher = [
+    (":load" , fileCompleter)
+  , (":l"    , fileCompleter)
+  ]
 
 completer :: Monad m => WordCompleter m
 completer n = do
-  let names = [":load", ":type"]
+  let names = [":load", ":type", ":q"]
   return $ filter (isPrefixOf n) names
 
 load :: [String] -> Repl ()
 load args = do
     contents <- liftIO $ readFile (unwords args)
     trace contents (return ())
-    --mapM (exec True) (L.lines contents)
 
 
 -- Commands
@@ -38,25 +43,31 @@ say args = do
     _ <- liftIO $ print (unwords args)
     return ()
 
+type' :: [String] -> Repl ()
+type' args = do
+    _ <- liftIO $ print (infer empty (parseTerm (unwords args)))
+    return ()
+
 quit :: a -> Repl ()
 quit _ = liftIO exitSuccess
 
 options :: [(String, [String] -> Repl ())]
 options = [
-    ("load", load)
-  , ("l", load)
-  , ("t", say)
-  , ("type", say)
+    ("l", load)
+  , ("load", load)
+  , ("t", type')
+  , ("type", type')
   , ("q", quit)
+  , ("quit", quit)
   , ("aeq", say) -- alpha equiv
-  , ("beq", say) -- beta equive
+  , ("beq", say) -- beta equiv
   ]
 
 ini :: Repl ()
 ini = liftIO $ putStrLn ""
 
 repl :: Repl a ->IO ()
-repl pre = evalRepl "> " cmd options (Word0 completer) ini
+repl pre = evalRepl "> " cmd options (Prefix (wordCompleter completer) defaultMatcher) ini
 
 main :: IO ()
 main = do
@@ -64,3 +75,4 @@ main = do
     case args of
         []         -> repl (return ())
         [fileName] -> repl (load [fileName])
+        _          -> return ()
