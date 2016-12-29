@@ -18,8 +18,10 @@ data Type = TVar (Name Type)
           | TArr Type Type
         deriving (Show, Generic, Typeable)
 
-data Term = Data -- type of types ( finite )
-          | Codata -- type of types ( infinite (corecursive) )
+data Base = Data  -- type of types ( finite )
+           | Codata  -- type of types ( infinite (corecursive) )
+        deriving (Show, Generic, Typeable)
+data Term = Base Base
           | Var !(Name Term)
           | Lambda !(Bind (Name Term) Term)
         --   | Pi !(Bind (Name Term) Term) -- "forall"
@@ -31,6 +33,7 @@ newtype Definition = Definition (Bind (Name Term) Term)
 
 newtype Module = Module [Definition]
 
+instance Alpha Base
 instance Alpha Type
 instance Alpha Term
 
@@ -43,6 +46,7 @@ instance Subst Term Term where
     isvar _       = Nothing
 
 instance Subst Term Type where
+instance Subst Term Base where
 
 data TypeError
   = UnboundVariable (Name Term)
@@ -60,7 +64,7 @@ empty = Map.empty
 
 freshtv :: Infer Type
 freshtv = do
-  x <- fresh (string2Name "t")
+  x <- fresh (string2Name "T")
   return $ TVar x
 
 infer' :: Env -> Term -> Infer (Type, [Constraint])

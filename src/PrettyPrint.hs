@@ -25,8 +25,7 @@ instance Pretty Type where
 
 instance Pretty Term where
     -- pp' p | trace ("pp was called: " ++ show p) False = undefined
-    pp' Data    = return $ text "Data"
-    pp' Codata  = return $ text "Codata"
+    pp' (Base c)    = pp' c
     pp' (Var n) = return $ name n
     pp' (App e1 e2) = do
         p1 <- pp' e1
@@ -36,6 +35,9 @@ instance Pretty Term where
         pe <- pp' e
         return $ backslash <> name n <+> farrow <+> pe
 
+instance Pretty Base where
+    pp' Data   = return $ text "Data"
+    pp' Codata = return $ text "Codata"
 instance Pretty Definition where
     pp' (Definition d) = lunbind d $ \(n, e) -> do
         pe <- pp' e
