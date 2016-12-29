@@ -4,7 +4,7 @@ import           Control.Applicative              hiding (many)
 
 import           Term
 import           Text.Parsec                      hiding ((<|>))
-
+import           Text.Parsec.Expr
 import           Text.Parsec.Language
 import           Text.Parsec.String
 import qualified Text.Parsec.Token                as Token
@@ -18,8 +18,11 @@ lambda' x t = Lambda $ bind (string2Name x) t
 var' :: String -> Term
 var' = Var . string2Name
 
-lexer = haskellStyle
-tokenizer = Token.makeTokenParser lexer
+tokenizer :: Token.TokenParser ()
+tokenizer = Token.makeTokenParser style
+  where ops = ["->","\\","="]
+        style = haskellStyle {Token.reservedOpNames = ops }
+
 
 ident      = Token.identifier tokenizer
 reserved   = Token.reserved tokenizer
@@ -43,8 +46,10 @@ data' = do
     reserved "Data"
     return Data
 
+
+
 term :: Parser Term
-term = lambda <|> data' <|> var <|> app
+term = parens app <|> lambda <|> data' <|> var
 
 lambda :: Parser Term
 lambda = do
@@ -56,12 +61,12 @@ lambda = do
 
 app :: Parser Term
 app = do
-  ts <- many term
+  ts <- many1 term
   return . foldl1 App $ ts
 
 parseTerm :: String -> Term
 parseTerm input =
-  case parse term "<stdin>" input of
+  case parse app "<stdin>" input of
     Left err  -> error (show err)
     Right ast -> ast
 

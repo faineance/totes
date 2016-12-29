@@ -2,7 +2,7 @@
 module Main where
 import           Control.Monad.Trans
 
-import           Data.List              (isPrefixOf)
+import           Data.List                        (isPrefixOf)
 import           Debug.Trace
 import           Parser
 import           PrettyPrint
@@ -10,7 +10,7 @@ import           System.Console.Repline
 import           System.Environment
 import           System.Exit
 import           Term
-
+import           Unbound.Generics.LocallyNameless
 type Repl a = HaskelineT IO a
 
 -- Evaluation : handle each line user inputs
@@ -25,7 +25,7 @@ defaultMatcher = [
 
 completer :: Monad m => WordCompleter m
 completer n = do
-  let names = [":load", ":type", ":q"]
+  let names = [":load", ":type", ":q", ":aeq"]
   return $ filter (isPrefixOf n) names
 
 load :: [String] -> Repl ()
@@ -55,6 +55,12 @@ type' args = do
 quit :: a -> Repl ()
 quit _ = liftIO exitSuccess
 
+-- alphaEquiv :: [String] -> Repl ()
+--
+-- alphaEquiv args = do
+--     _ <- liftIO $ putStrLn (show (parseTerm t1 `aeq` (parseTerm t2)))
+--     return ()
+
 options :: [(String, [String] -> Repl ())]
 options = [
     ("l", load)
@@ -63,7 +69,7 @@ options = [
   , ("type", type')
   , ("q", quit)
   , ("quit", quit)
-  , ("aeq", say) -- alpha equiv
+  -- , ("aeq", alphaEquiv) -- alpha equiv
   , ("beq", say) -- beta equiv
   ]
 
