@@ -17,4 +17,4 @@ executable totes
   hs-source-dirs:      src
   main-is:             Main.hs
   default-language:    Haskell2010
-  build-depends:       base >= 4.7 && < 5, containers, unbound-generics, repline, mtl, process, ansi-wl-pprint , parsec
+  build-depends:       base >= 4.7 && < 5, containers, unbound-generics, repline, parsers, mtl, process, ansi-wl-pprint , parsec

@@ -17,15 +17,16 @@ instance Pretty (Name a) where
 
 instance Pretty Type where
     -- pp' p | trace ("pp was called: " ++ show p) False = undefined
-    pp' (TVar n) = return $ name n
+    pp' (TVar n) = return $ blue (name n)
     pp' (TArr t1 t2) = do
           p1 <- pp' t1
           p2 <- pp' t2
-          return $ text "\\" <> p1 <+> farrow <+> p2
+          return $ text "\\" <> blue p1 <+> farrow <+> blue p2
+    pp' TData = return $ blue ( text "Data" )
 
 instance Pretty Term where
     -- pp' p | trace ("pp was called: " ++ show p) False = undefined
-    pp' (Base c)    = pp' c
+    -- pp' (Base c)    = pp' c
     pp' (Var n) = return $ name n
     pp' (App e1 e2) = do
         p1 <- pp' e1
@@ -33,11 +34,11 @@ instance Pretty Term where
         return $ parens $ p1 <+> p2
     pp' (Lambda b) = lunbind b $ \(n, e) -> do
         pe <- pp' e
-        return $ backslash <> name n <+> farrow <+> pe
-
-instance Pretty Base where
-    pp' Data   = return $ text "Data"
-    pp' Codata = return $ text "Codata"
+        return $ backslash <> green (name n) <+> farrow <+> green (pe)
+    pp' Data = return $ green ( text "Data" )
+-- instance Pretty Base where
+--     pp' Data   = return $ text "Data"
+--     pp' Codata = return $ text "Codata"
 instance Pretty Definition where
     pp' (Definition d) = lunbind d $ \(n, e) -> do
         pe <- pp' e

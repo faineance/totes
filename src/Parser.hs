@@ -41,12 +41,12 @@ var = do
   name <- ident
   return $ var' name
 
-
-base :: Parser Term
-base = (reserved "Data" >> return (Base Data)) <|> (reserved "Codata" >> return (Base Codata))
+--
+-- base :: Parser Term
+-- base = (reserved "Data" >> return (Base Data)) <|> (reserved "Codata" >> return (Base Codata))
 
 term :: Parser Term
-term = parens app <|> lambda <|> var <|> base
+term = parens app <|> lambda <|> (reserved "Data" >> return (Data)) <|> var
 
 lambda :: Parser Term
 lambda = do

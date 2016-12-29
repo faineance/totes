@@ -16,16 +16,18 @@ import           Unbound.Generics.LocallyNameless
 
 data Type = TVar (Name Type)
           | TArr Type Type
+          | TData
         deriving (Show, Generic, Typeable)
 
-data Base = Data  -- type of types ( finite )
-           | Codata  -- type of types ( infinite (corecursive) )
-        deriving (Show, Generic, Typeable)
-data Term = Base Base
-          | Var !(Name Term)
+-- data Base = Data  -- type of types ( finite )
+--            | Codata  -- type of types ( infinite (corecursive) )
+--         deriving (Show, Generic, Typeable)
+
+data Term = Var !(Name Term)
           | Lambda !(Bind (Name Term) Term)
         --   | Pi !(Bind (Name Term) Term) -- "forall"
           | App !Term !Term
+          | Data
         deriving (Show, Generic, Typeable)
 
 newtype Definition = Definition (Bind (Name Term) Term)
@@ -33,7 +35,7 @@ newtype Definition = Definition (Bind (Name Term) Term)
 
 newtype Module = Module [Definition]
 
-instance Alpha Base
+-- instance Alpha Base
 instance Alpha Type
 instance Alpha Term
 
@@ -46,7 +48,7 @@ instance Subst Term Term where
     isvar _       = Nothing
 
 instance Subst Term Type where
-instance Subst Term Base where
+-- instance Subst Term Base where
 
 data TypeError
   = UnboundVariable (Name Term)
@@ -74,6 +76,7 @@ infer' env term = case term of
         (n, e) <- unbind b
         tv <- freshtv
         let env' = Map.insert n tv env
+        traceM (show env')
         (t, cs) <- infer' env' e
         return (TArr tv t, cs)
     App e1 e2 -> do
@@ -84,6 +87,7 @@ infer' env term = case term of
     Var n -> case Map.lookup n env of
         Nothing -> throwError $ UnboundVariable n
         Just t  -> return (t, [])
+    Data -> return (TData,[])
 
 infer :: Env -> Term -> Either TypeError (Type, [Constraint])
 infer env term = runFreshM (runExceptT (infer' env term))

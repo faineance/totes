@@ -4,6 +4,7 @@ import           Control.Monad.State.Strict
 import           Control.Monad.Trans
 
 import           Data.List                        (isPrefixOf)
+import           Data.Map                         (singleton)
 import           Debug.Trace
 import           Parser
 import           PrettyPrint
@@ -61,7 +62,7 @@ exec :: String -> Repl ()
 exec source = do
     st <- get
     ty <- hoistErr $ infer st parsed
-    _ <- liftIO $ putStrLn (pp parsed ++ " : " ++ pp (fst ty))
+    _ <- liftIO $ putStrLn (pp parsed ++ " :: " ++ pp (fst ty) )
     put st
         where
             parsed = parseTerm source
@@ -92,7 +93,7 @@ ini = liftIO $ putStrLn ""
 
 repl :: Repl a -> IO ()
 repl pre = evalStateT (evalRepl "> " cmd options (Prefix (wordCompleter completer) defaultMatcher) ini) empty
-
+-- (singleton (Var (bind (s2n "id")))  (Lambda (bind (s2n "x") (Var  (s2n "x")))))
 main :: IO ()
 main = do
     args <- getArgs
