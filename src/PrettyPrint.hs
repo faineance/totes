@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module PrettyPrint where
-import           Debug.Trace
+-- import           Debug.Trace
 import           Term
 import           Text.PrettyPrint.ANSI.Leijen     hiding (Pretty)
 import           Unbound.Generics.LocallyNameless
@@ -34,7 +34,7 @@ instance Pretty Term where
         return $ parens $ p1 <+> p2
     pp' (Lambda b) = lunbind b $ \(n, e) -> do
         pe <- pp' e
-        return $ backslash <> green (name n) <+> farrow <+> green (pe)
+        return $ backslash <> green (name n) <+> farrow <+> green pe
     pp' Data = return $ green ( text "Data" )
 -- instance Pretty Base where
 --     pp' Data   = return $ text "Data"
@@ -48,6 +48,8 @@ instance Pretty Module where
     pp' (Module ds) = do
         res <- mapM pp' ds
         return $ vcat res
+
+
 
 pp :: (Pretty p) => p -> String
 pp p = show (runLFreshM . pp' $ p)
