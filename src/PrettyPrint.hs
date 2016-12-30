@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wall #-}
+{-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module PrettyPrint where
 -- import           Debug.Trace
@@ -49,7 +50,10 @@ instance Pretty Module where
         res <- mapM pp' ds
         return $ vcat res
 
-
+-- instance Pretty (Infer (Type, [Constraint])) where
+--     pp' inf = do
+--         ty <- fst inf
+--         return $ pp' b
 
 pp :: (Pretty p) => p -> String
 pp p = show (runLFreshM . pp' $ p)
