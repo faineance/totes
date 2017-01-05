@@ -13,8 +13,12 @@ import           Debug.Trace
 import           GHC.Generics
 import           Unbound.Generics.LocallyNameless
 
+-- System F
 
-data Type = TVar (Name Type)
+type TermName = Name Term
+type TypeName = Name Type
+
+data Type = TVar TypeName
           | TArr Type Type
           | TData
         deriving (Show, Generic, Typeable)
@@ -23,9 +27,10 @@ data Type = TVar (Name Type)
 --            | Codata  -- type of types ( infinite (corecursive) )
 --         deriving (Show, Generic, Typeable)
 
-data Term = Var !(Name Term)
-          | Lambda !(Bind (Name Term) Term)
+data Term = Var !TermName
+        --   | Lambda !(Bind TermName Term)
         --   | Pi !(Bind (Name Term) Term) -- "forall"
+          |  Lambda (Bind (TermName, Embed Type) Term)
           | App !Term !Term
           | Data
         deriving (Show, Generic, Typeable)
@@ -39,6 +44,9 @@ newtype Module = Module [Definition]
 instance Alpha Type
 instance Alpha Term
 
+instance Eq Term where
+    (==) = aeq
+
 instance Subst Type Type where
   isvar (TVar v) = Just (SubstName v)
   isvar _        = Nothing
@@ -48,46 +56,3 @@ instance Subst Term Term where
     isvar _       = Nothing
 
 instance Subst Term Type where
--- instance Subst Term Base where
-
-data TypeError
-  = UnboundVariable (Name Term)
-  | GenericTypeError
-  deriving (Show)
-
-type Infer = ExceptT TypeError FreshM
-
-
-type Env = Map.Map (Name Term) Type
-type Constraint = (Type, Type)
-
-empty :: Env
-empty = Map.empty
-
-freshtv :: Infer Type
-freshtv = do
-  x <- fresh (string2Name "T")
-  return $ TVar x
-
-infer' :: Env -> Term -> Infer (Type, [Constraint])
-infer' env term | trace ("infer was called: "++show term) False = undefined
-infer' env term = case term of
-    Lambda b -> do
-        (n, e) <- unbind b
-        tv <- freshtv
-        let env' = Map.insert n tv env
-        traceM (show env')
-        (t, cs) <- infer' env' e
-        return (TArr tv t, cs)
-    App e1 e2 -> do
-        (t1, cs1) <- infer' env e1
-        (t2, cs2) <- infer' env e2
-        tv <- freshtv
-        return (tv, (t1, TArr t2 tv) : cs1 ++ cs2)
-    Var n -> case Map.lookup n env of
-        Nothing -> throwError $ UnboundVariable n
-        Just t  -> return (t, [])
-    Data -> return (TData,[])
-
-infer :: Env -> Term -> Either TypeError (Type, [Constraint])
-infer env term = runFreshM (runExceptT (infer' env term))

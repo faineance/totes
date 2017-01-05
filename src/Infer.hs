@@ -1,0 +1,58 @@
+module Infer where
+--
+-- data TypeError
+--   = UnboundVariable (Name Term)
+--   | GenericTypeError
+--   deriving (Show)
+--
+-- type Infer = ExceptT TypeError FreshM
+--
+--
+-- type Env = Map.Map (Name Term) Type
+-- type Constraint = (Type, Type)
+--
+-- empty :: Env
+-- empty = Map.empty
+--
+-- freshtv :: Infer Type
+-- freshtv = do
+--   x <- fresh (string2Name "T")
+--   return $ TVar x
+--
+-- infer' :: Env -> Term -> Infer (Type, [Constraint])
+-- infer' env term | trace ("infer was called: "++show term) False = undefined
+-- infer' env term = case term of
+--     Lambda b -> do
+--         (n, e) <- unbind b
+--         tv <- freshtv
+--         let env' = Map.insert n tv env
+--         traceM (show env')
+--         (t, cs) <- infer' env' e
+--         return (TArr tv t, cs)
+--     App e1 e2 -> do
+--         (t1, cs1) <- infer' env e1
+--         (t2, cs2) <- infer' env e2
+--         tv <- freshtv
+--         return (tv, (t1, TArr t2 tv) : cs1 ++ cs2)
+--     Var n -> case Map.lookup n env of
+--         Nothing -> throwError $ UnboundVariable n
+--         Just t  -> return (t, [])
+--     Data -> return (TData,[])
+
+-- inferDef :: Env -> [Definition] -> _
+-- inferDef env defs =  foldl defs inferDef'
+
+--
+-- inferDef' :: Env -> Definition -> Infer Env
+-- inferDef' env (Definition b) = do
+--                             (n, e) <- unbind b
+--                             tv <- freshtv
+--
+--                             let env' = case Map.lookup n env of
+--                                                 Nothing -> Map.insert n tv env
+--                                                 Just t -> env
+--                             traceM (show env')
+--                             return env'
+--
+-- infer :: Env -> Term -> Either TypeError (Type, [Constraint])
+-- infer env term = runFreshM (runExceptT (infer' env term))

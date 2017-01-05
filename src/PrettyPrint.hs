@@ -45,10 +45,10 @@ instance Pretty Definition where
         pe <- pp' e
         return $ name n <+> white (char '=') <+> pe
 
-instance Pretty Module where
-    pp' (Module ds) = do
-        res <- mapM pp' ds
-        return $ vcat res
+-- instance Pretty Module where
+--     pp' (Module ds) = do
+--         res <- mapM pp' ds
+--         return $ vcat res
 
 -- instance Pretty (Infer (Type, [Constraint])) where
 --     pp' inf = do

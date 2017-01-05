@@ -46,7 +46,7 @@ var = do
 -- base = (reserved "Data" >> return (Base Data)) <|> (reserved "Codata" >> return (Base Codata))
 
 term :: Parser Term
-term = parens app <|> lambda <|> (reserved "Data" >> return (Data)) <|> var
+term = parens app <|> lambda <|> (reserved "Data" >> return Data) <|> var
 
 lambda :: Parser Term
 lambda = do
@@ -67,8 +67,14 @@ parseTerm input =
     Left err  -> error (show err)
     Right ast -> ast
 
-parseModule :: String -> Module
+parseDefinition :: String -> Definition
+parseDefinition input =
+    case parse definition "<stdin>" input of
+      Left err  -> error (show err)
+      Right ast ->  ast
+
+parseModule :: String -> [Definition]
 parseModule input =
     case parse (many1 definition) "<stdin>" input of
       Left err  -> error (show err)
-      Right ast -> Module ast
+      Right ast ->  ast
