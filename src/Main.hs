@@ -2,7 +2,7 @@
 module Main where
 import           Control.Monad.State.Strict
 import           Control.Monad.Trans
-
+import Eval
 import           Data.List                        (isPrefixOf)
 import           Data.Map                         (singleton)
 import           Debug.Trace

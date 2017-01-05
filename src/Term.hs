@@ -26,6 +26,8 @@ data Type = TVar (Name Type)
 data Term = Var !(Name Term)
           | Lambda !(Bind (Name Term) Term)
         --   | Pi !(Bind (Name Term) Term) -- "forall"
+          | Let !(Bind (Name Term) Term)
+
           | App !Term !Term
           | Data
         deriving (Show, Generic, Typeable)
