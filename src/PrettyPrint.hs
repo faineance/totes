@@ -29,10 +29,11 @@ instance Pretty Term where
     -- pp' p | trace ("pp was called: " ++ show p) False = undefined
     -- pp' (Base c)    = pp' c
     pp' (Var n) = return $ name n
-    pp' (App e1 e2) = do
+    pp' (App e1 t1 e2) = do
         p1 <- pp' e1
         p2 <- pp' e2
-        return $ parens $ p1 <+> p2
+        pt1 <- pp' t1
+        return $ parens $ p1 <+> colon <+> parens pt1 <+> p2
     pp' (Lambda b) = lunbind b $ \(n, e) -> do
         pe <- pp' e
         return $ backslash <> green (name n) <+> farrow <+> green pe

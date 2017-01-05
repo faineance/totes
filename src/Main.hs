@@ -1,17 +1,19 @@
 {-# OPTIONS_GHC -Wall #-}
 module Main where
+
 import           Control.Monad.State.Strict
 import           Control.Monad.Trans
-import Eval
 import           Data.List                        (isPrefixOf)
 import           Data.Map                         (singleton)
 import           Debug.Trace
+import           Eval
 import           Parser
 import           PrettyPrint
 import           System.Console.Repline
 import           System.Environment
 import           System.Exit
 import           Term
+import           Typecheck
 import           Unbound.Generics.LocallyNameless
 type Repl a = HaskelineT (StateT Env IO) a
 
