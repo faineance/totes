@@ -18,6 +18,11 @@ lambda' x t = Lambda $ bind (string2Name x) t
 var' :: String -> Term
 var' = Var . string2Name
 
+
+tvar' :: String -> Type
+tvar' = TVar . string2Name
+
+
 tokenizer :: Token.TokenParser ()
 tokenizer = Token.makeTokenParser style
   where ops = ["->","\\","="]
@@ -36,7 +41,7 @@ definition = do
   body <- term
   return . Definition . bind (string2Name name) $ body
 
-var :: Parser Term
+var,term,lambda :: Parser Term
 var = do
   name <- ident
   return $ var' name
@@ -45,10 +50,8 @@ var = do
 -- base :: Parser Term
 -- base = (reserved "Data" >> return (Base Data)) <|> (reserved "Codata" >> return (Base Codata))
 
-term :: Parser Term
-term = parens app <|> lambda <|> (reserved "Data" >> return (Data)) <|> var
+term = lambda <|> (reserved "Data" >> return (Data)) <|> var
 
-lambda :: Parser Term
 lambda = do
     reservedOp "\\"
     name <- ident
@@ -56,19 +59,33 @@ lambda = do
     body <- term
     return . Lambda . bind (string2Name name) $ body
 
-app :: Parser Term
-app = do
-  ts <- many1 term
-  return . foldl1 App $ ts
+-- app :: Parser Term
+-- app = do
+--   ts <- many1 term
+--   return . foldl1 App $ ts
+
+tvar, tarrow :: Parser Type
+tvar = do
+  name <- ident
+  return $ tvar' name
+tarrow = do
+  reservedOp "\\"
+  t1 <- ty
+  reservedOp "->"
+  t2 <- ty
+  return $ TArr t1 t2
+
+ty :: Parser Type
+ty = tvar <|> tarrow
 
 parseTerm :: String -> Term
-parseTerm input =
-  case parse app "<stdin>" input of
+parseTerm = parseP term
+
+parseType :: String -> Type
+parseType = parseP ty
+
+parseP:: Parser a -> String -> a
+parseP p input =
+  case parse p "<stdin>" input of
     Left err  -> error (show err)
     Right ast -> ast
-
-parseModule :: String -> Module
-parseModule input =
-    case parse (many1 definition) "<stdin>" input of
-      Left err  -> error (show err)
-      Right ast -> Module ast
